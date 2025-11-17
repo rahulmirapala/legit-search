@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+*.egg-info/
+
+# Data (DO NOT commit your large dataset)
+data/
+*.jsonl
+
+# OS
+.DS_Store

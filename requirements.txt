@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+elasticsearch
+nltk
+autocorrect
+PyMuPDF
