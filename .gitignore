@@ -1,7 +1,7 @@
 # Python
 __pycache__/
 *.pyc
-.env
+.env.example
 .venv/
 *.egg-info/
 

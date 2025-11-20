@@ -1,0 +1,113 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "analysis": {
+      "filter": {
+        "legal_stop": {
+          "type": "stop",
+          "stopwords": ["a", "an", "the"]
+        },
+        "english_possessive_stemmer": {"type": "stemmer", "name": "possessive_english"},
+        "kstem": {"type": "stemmer", "name": "kstem"},
+        "edge_ngrams": {"type": "edge_ngram", "min_gram": 2, "max_gram": 20},
+        "shingle_2_3": {"type": "shingle", "min_shingle_size": 2, "max_shingle_size": 3, "output_unigrams": true},
+        "legal_synonyms": {
+          "type": "synonym_graph",
+          "lenient": true,
+          "synonyms": [
+            "alimony, maintenance",
+            "bail, release on bond",
+            "FIR, first information report",
+            "PIL, public interest litigation, writ petition",
+            "habeas corpus, unlawful detention, illegal custody",
+            "precedent, stare decisis",
+            "fundamental rights, constitutionally guaranteed rights, constitutional rights",
+            "Article 21, right to life, personal liberty",
+            "Article 14, equality, equal protection",
+            "Article 19, freedom of speech, freedom of expression",
+            "Article 32, constitutional remedy, writ jurisdiction, supreme court writ",
+            "natural justice, audi alteram partem, fair hearing, principles of justice",
+            "judicial review, writ, certiorari, mandamus, quo warranto",
+            "Section 498A, dowry harassment, matrimonial cruelty, domestic violence",
+            "Section 420, cheating, fraud",
+            "Section 302, murder, culpable homicide",
+            "basic structure, Kesavananda Bharati, constitutional amendment limits",
+            "Vishaka, sexual harassment, workplace harassment",
+            "Maneka Gandhi, due process, procedure established by law"
+          ]
+        }
+      },
+      "analyzer": {
+        "legal_text_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "english_possessive_stemmer",
+            "kstem",
+            "legal_stop"
+          ]
+        },
+        "legal_text_search": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "english_possessive_stemmer",
+            "kstem",
+            "legal_stop",
+            "legal_synonyms"
+          ]
+        },
+        "legal_shingle": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "english_possessive_stemmer",
+            "kstem",
+            "legal_stop",
+            "shingle_2_3"
+          ]
+        },
+        "case_name_autocomplete": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding", "edge_ngrams"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "case_name": {
+        "type": "text",
+        "analyzer": "legal_text_analyzer",
+        "search_analyzer": "legal_text_search",
+        "fields": {
+          "raw": {"type": "keyword", "ignore_above": 256},
+          "ngram": {"type": "text", "analyzer": "case_name_autocomplete", "search_analyzer": "legal_text_search"},
+          "shingle": {"type": "text", "analyzer": "legal_shingle"}
+        }
+      },
+      "judgment_date": {"type": "date", "format": "yyyy-MM-dd"},
+      "citation_id": {"type": "keyword"},
+      "full_text": {
+        "type": "text",
+        "analyzer": "legal_text_analyzer",
+        "search_analyzer": "legal_text_search",
+        "fields": {"shingle": {"type": "text", "analyzer": "legal_shingle"}}
+      },
+      "year": {"type": "integer"},
+      "page_rank": {"type": "float"},
+      "ocr_used": {"type": "boolean"},
+      "embedding": {"type": "dense_vector", "dims": 384, "index": true, "similarity": "cosine"},
+      "court": {"type": "keyword"}
+      ,"pdf_filename": {"type": "keyword", "ignore_above": 256}
+    }
+  }
+}

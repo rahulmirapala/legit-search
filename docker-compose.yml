@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: legit-search-es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - legit-search-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legit-search-backend
+    environment:
+      - ES_HOST=http://elasticsearch:9200
+      - INDEX_NAME=legal_judgments
+      - LLM_API_KEY=${LLM_API_KEY:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - legit-search-net
+    volumes:
+      - ./app:/app/app
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: legit-search-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - legit-search-net
+    restart: unless-stopped
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  legit-search-net:
+    driver: bridge

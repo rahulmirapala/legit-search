@@ -1,13 +1,25 @@
 #!/bin/bash
 
-echo "Starting bulk upload to Elasticsearch..."
+# Usage: bash scripts/2_bulk_upload.sh <jsonl_file> [index_name]
+# Example: bash scripts/2_bulk_upload.sh data/judgments.jsonl legal_judgments
 
-# This path is relative to the script's location
-# ../data/ goes up one level from 'scripts' and then into 'data'
-DATA_FILE="../data/bulk_index.jsonl"
+DATA_FILE="${1:-../data/bulk_index.jsonl}"
+INDEX_NAME="${2:-legal_judgments}"
 ELASTICSEARCH_URL="http://localhost:9200/_bulk"
 
-curl -s -H "Content-Type: application/x-ndjson" -XPOST $ELASTICSEARCH_URL --data-binary "@$DATA_FILE"
+if [ ! -f "$DATA_FILE" ]; then
+    echo "❌ Error: File not found: $DATA_FILE"
+    echo "Usage: bash scripts/2_bulk_upload.sh <jsonl_file> [index_name]"
+    exit 1
+fi
 
-echo
-echo "Upload complete."
+echo "Starting bulk upload to Elasticsearch..."
+echo "📂 File: $DATA_FILE"
+echo "📊 Index: $INDEX_NAME"
+echo "🔗 Elasticsearch: $ELASTICSEARCH_URL"
+echo ""
+
+curl -s -H "Content-Type: application/x-ndjson" -XPOST "$ELASTICSEARCH_URL" --data-binary "@$DATA_FILE"
+
+echo ""
+echo "✅ Upload complete."

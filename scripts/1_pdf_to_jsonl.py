@@ -31,11 +31,11 @@ def clean_text(text):
 # --- NEW METADATA FUNCTIONS ---
 
 def parse_date_from_filename(date_str):
-    """Attempts to parse a date string like 19_May_1950."""
+    """Attempts to parse a date string like 19_May_1950 and convert to yyyy-MM-dd."""
     try:
         # Based on filename format: 19_May_1950
         dt = datetime.strptime(date_str, '%d_%B_%Y')
-        return dt.strftime('%Y-%m-%d')
+        return dt.strftime('%Y-%m-%d')  # Return in ES-compatible format
     except ValueError:
         return None
 
@@ -124,7 +124,8 @@ def main():
                                 "judgment_date": judgment_date,
                                 "citation_id": citation,
                                 "full_text": clean_text_content,
-                                "year": int(year_folder)
+                                "year": int(year_folder),
+                                "court": "Supreme Court of India"
                             }
                             
                             # 6. Write to bulk file
